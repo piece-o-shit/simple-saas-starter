@@ -30,7 +30,7 @@ const toolSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   type: z.enum(["api", "database", "file_system", "custom"]),
-  configuration: z.record(z.any()).optional(),
+  configuration: z.record(z.any()).optional().default({}),
 });
 
 type ToolFormValues = z.infer<typeof toolSchema>;
@@ -72,7 +72,14 @@ const ToolForm = () => {
       }
 
       if (data) {
-        form.reset(data);
+        // Extract only the fields we need for the form
+        const formData: ToolFormValues = {
+          name: data.name,
+          description: data.description || "",
+          type: data.type,
+          configuration: data.configuration || {},
+        };
+        form.reset(formData);
       }
 
       return data;
@@ -82,14 +89,25 @@ const ToolForm = () => {
 
   const mutation = useMutation({
     mutationFn: async (values: ToolFormValues) => {
+      const user = (await supabase.auth.getUser()).data.user;
+      
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+
+      const toolData = {
+        ...values,
+        created_by: user.id,
+      };
+
       const { error } = id
         ? await supabase
             .from('tools')
-            .update(values)
+            .update(toolData)
             .eq('id', id)
         : await supabase
             .from('tools')
-            .insert([values]);
+            .insert([toolData]);
 
       if (error) throw error;
     },
