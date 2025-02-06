@@ -13,6 +13,8 @@ import Documentation from "./pages/Documentation";
 import NotFound from "./pages/NotFound";
 import Agents from "./pages/Agents";
 import AgentForm from "./pages/AgentForm";
+import Tools from "./pages/Tools";
+import ToolForm from "./pages/ToolForm";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +34,9 @@ const App = () => (
           <Route path="/agents" element={<Agents />} />
           <Route path="/agents/new" element={<AgentForm />} />
           <Route path="/agents/:id" element={<AgentForm />} />
+          <Route path="/tools" element={<Tools />} />
+          <Route path="/tools/new" element={<ToolForm />} />
+          <Route path="/tools/:id" element={<ToolForm />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
