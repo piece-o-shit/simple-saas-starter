@@ -25,12 +25,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { Database } from "@/integrations/supabase/types";
+
+type Tool = Database['public']['Tables']['tools']['Row'];
+type InsertTool = Database['public']['Tables']['tools']['Insert'];
 
 const toolSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   type: z.enum(["api", "database", "file_system", "custom"]),
-  configuration: z.record(z.any()).optional().default({}),
+  configuration: z.any().optional().default({}),
 });
 
 type ToolFormValues = z.infer<typeof toolSchema>;
@@ -72,7 +76,6 @@ const ToolForm = () => {
       }
 
       if (data) {
-        // Extract only the fields we need for the form
         const formData: ToolFormValues = {
           name: data.name,
           description: data.description || "",
@@ -95,8 +98,11 @@ const ToolForm = () => {
         throw new Error("User not authenticated");
       }
 
-      const toolData = {
-        ...values,
+      const toolData: InsertTool = {
+        name: values.name,
+        description: values.description,
+        type: values.type,
+        configuration: values.configuration,
         created_by: user.id,
       };
 
