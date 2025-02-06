@@ -14,36 +14,44 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
+
     const checkAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
-        if (!session) {
+        if (!session && mounted) {
           console.log("No session found, redirecting to auth");
           navigate("/auth");
           return;
         }
 
-        const { data: hasAdminRole, error: roleError } = await supabase.rpc('has_role', {
-          _user_id: session.user.id,
-          _role: 'admin'
-        });
-        
-        if (roleError) {
-          console.error("Error checking admin role:", roleError);
-          return;
+        if (session && mounted) {
+          const { data: hasAdminRole, error: roleError } = await supabase.rpc('has_role', {
+            _user_id: session.user.id,
+            _role: 'admin'
+          });
+          
+          if (roleError) {
+            console.error("Error checking admin role:", roleError);
+            return;
+          }
+          
+          setIsAdmin(hasAdminRole);
         }
-        
-        setIsAdmin(hasAdminRole);
       } catch (error) {
         console.error("Auth check error:", error);
-        navigate("/auth");
+        if (mounted) {
+          navigate("/auth");
+        }
       }
     };
 
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+      
       console.log("Auth state changed:", event, session);
       if (event === 'SIGNED_OUT' || !session) {
         navigate("/auth");
@@ -51,6 +59,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, [navigate]);

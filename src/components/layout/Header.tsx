@@ -14,16 +14,9 @@ const Header = ({ isAdmin }: HeaderProps) => {
 
   const handleSignOut = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        console.log("No active session found");
-        navigate("/auth");
-        return;
-      }
-
-      console.log("Starting sign out process");
-      const { error } = await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut({
+        scope: 'local'  // Changed to local scope to avoid session conflicts
+      });
       
       if (error) {
         throw error;
