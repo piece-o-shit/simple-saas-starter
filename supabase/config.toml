@@ -1,1 +1,5 @@
+
 project_id = "lbyrenomabsdgxphhfdb"
+
+[functions.agent-service]
+verify_jwt = false
