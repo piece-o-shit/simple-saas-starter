@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -11,30 +12,72 @@ interface DashboardLayoutProps {
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log("Current session:", session);
+        
+        if (!session) {
+          console.log("No session found, redirecting to auth");
+          navigate("/auth");
+          return;
+        }
 
-      // Check if user is admin
-      const { data: hasAdminRole } = await supabase.rpc('has_role', {
-        _user_id: session.user.id,
-        _role: 'admin'
-      });
-      
-      setIsAdmin(hasAdminRole);
+        const { data: hasAdminRole, error: roleError } = await supabase.rpc('has_role', {
+          _user_id: session.user.id,
+          _role: 'admin'
+        });
+        
+        if (roleError) {
+          console.error("Error checking admin role:", roleError);
+          return;
+        }
+        
+        setIsAdmin(hasAdminRole);
+      } catch (error: any) {
+        console.error("Auth check error:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to verify authentication",
+        });
+        navigate("/auth");
+      }
     };
 
     checkAuth();
+
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session);
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate("/auth");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/auth");
+    try {
+      console.log("Starting sign out process");
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      console.log("Sign out successful");
+      navigate("/auth");
+    } catch (error: any) {
+      console.error("Sign out error:", error);
+      toast({
+        variant: "destructive",
+        title: "Error signing out",
+        description: error.message,
+      });
+    }
   };
 
   return (
