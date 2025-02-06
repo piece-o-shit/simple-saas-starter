@@ -21,12 +21,13 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session && mounted) {
-          console.log("No session found, redirecting to auth");
+          console.log("No session found in DashboardLayout, redirecting to auth");
           navigate("/auth");
           return;
         }
 
         if (session && mounted) {
+          console.log("Session found, checking admin role");
           const { data: hasAdminRole, error: roleError } = await supabase.rpc('has_role', {
             _user_id: session.user.id,
             _role: 'admin'
@@ -37,10 +38,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             return;
           }
           
-          setIsAdmin(hasAdminRole);
+          if (mounted) {
+            setIsAdmin(hasAdminRole);
+          }
         }
       } catch (error) {
-        console.error("Auth check error:", error);
+        console.error("Auth check error in DashboardLayout:", error);
         if (mounted) {
           navigate("/auth");
         }
@@ -52,7 +55,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
       
-      console.log("Auth state changed:", event, session);
+      console.log("Auth state changed in DashboardLayout:", event, session);
       if (event === 'SIGNED_OUT' || !session) {
         navigate("/auth");
       }

@@ -14,16 +14,29 @@ const Header = ({ isAdmin }: HeaderProps) => {
 
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut({
-        scope: 'local'  // Changed to local scope to avoid session conflicts
-      });
+      // First check if we have a session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.log("No active session found, redirecting to auth");
+        navigate("/auth");
+        return;
+      }
+
+      // Perform the sign out
+      const { error } = await supabase.auth.signOut();
       
       if (error) {
-        throw error;
+        console.error("Sign out error:", error);
+        toast({
+          variant: "destructive",
+          title: "Error signing out",
+          description: error.message,
+        });
+      } else {
+        console.log("Sign out successful");
+        navigate("/auth");
       }
-      
-      console.log("Sign out successful");
-      navigate("/auth");
     } catch (error: any) {
       console.error("Sign out error:", error);
       toast({
