@@ -72,8 +72,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <Header isAdmin={isAdmin} />
       <div className="py-10">
         <main>
-          <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            {children}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="bg-white shadow rounded-lg">
+              {children}
+            </div>
           </div>
         </main>
       </div>

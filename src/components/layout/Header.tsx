@@ -1,8 +1,9 @@
 
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { Settings, CreditCard } from "lucide-react";
 
 interface HeaderProps {
   isAdmin: boolean;
@@ -14,7 +15,6 @@ const Header = ({ isAdmin }: HeaderProps) => {
 
   const handleSignOut = async () => {
     try {
-      // First check if we have a session
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -23,7 +23,6 @@ const Header = ({ isAdmin }: HeaderProps) => {
         return;
       }
 
-      // Perform the sign out
       const { error } = await supabase.auth.signOut();
       
       if (error) {
@@ -44,7 +43,6 @@ const Header = ({ isAdmin }: HeaderProps) => {
         title: "Error signing out",
         description: error.message,
       });
-      // Even if there's an error, redirect to auth page
       navigate("/auth");
     }
   };
@@ -55,22 +53,36 @@ const Header = ({ isAdmin }: HeaderProps) => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <span className="text-xl font-bold">AgentPlate</span>
+              <Link to="/dashboard" className="text-xl font-bold">AgentPlate</Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <a
-                href="/dashboard"
+              <Link
+                to="/dashboard"
                 className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
               >
                 Dashboard
-              </a>
+              </Link>
+              <Link
+                to="/billing"
+                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+              >
+                <CreditCard className="mr-2 h-4 w-4" />
+                Billing
+              </Link>
+              <Link
+                to="/settings"
+                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+              >
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </Link>
               {isAdmin && (
-                <a
-                  href="/admin"
+                <Link
+                  to="/admin"
                   className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                 >
                   Admin Panel
-                </a>
+                </Link>
               )}
             </div>
           </div>
