@@ -11,6 +11,8 @@ import Settings from "./pages/Settings";
 import Billing from "./pages/Billing";
 import Documentation from "./pages/Documentation";
 import NotFound from "./pages/NotFound";
+import Agents from "./pages/Agents";
+import AgentForm from "./pages/AgentForm";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,9 @@ const App = () => (
           <Route path="/settings" element={<Settings />} />
           <Route path="/billing" element={<Billing />} />
           <Route path="/documentation" element={<Documentation />} />
+          <Route path="/agents" element={<Agents />} />
+          <Route path="/agents/new" element={<AgentForm />} />
+          <Route path="/agents/:id" element={<AgentForm />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { Settings, CreditCard, BookOpen } from "lucide-react";
+import { Settings, CreditCard, BookOpen, Users } from "lucide-react";
 
 interface HeaderProps {
   isAdmin: boolean;
@@ -61,6 +61,13 @@ const Header = ({ isAdmin }: HeaderProps) => {
                 className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
               >
                 Dashboard
+              </Link>
+              <Link
+                to="/agents"
+                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+              >
+                <Users className="mr-2 h-4 w-4" />
+                Agents
               </Link>
               <Link
                 to="/billing"
