@@ -52,7 +52,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const authListener = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
       
       console.log("Auth state changed in DashboardLayout:", event, session);
@@ -63,7 +63,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      authListener.data.subscription.unsubscribe();
     };
   }, [navigate]);
 

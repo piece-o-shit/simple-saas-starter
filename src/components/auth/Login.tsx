@@ -22,6 +22,9 @@ const Login = ({ onToggleAuth }: LoginProps) => {
     setIsLoading(true);
 
     try {
+      // Clear any existing session first
+      await supabase.auth.signOut();
+      
       const { error, data } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -29,11 +32,13 @@ const Login = ({ onToggleAuth }: LoginProps) => {
       
       if (error) throw error;
       
-      // If login is successful, navigate to dashboard
+      // If login is successful and we have a session, navigate to dashboard
       if (data.session) {
+        console.log("Login successful, session established");
         navigate("/dashboard");
       }
     } catch (error: any) {
+      console.error("Login error:", error);
       toast({
         variant: "destructive",
         title: "Error",
