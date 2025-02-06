@@ -23,7 +23,7 @@ serve(async (req) => {
 
     const model = new ChatOpenAI({
       openAIApiKey: Deno.env.get('OPENAI_API_KEY'),
-      modelName: "gpt-4o-mini", // Using the recommended faster model
+      modelName: "gpt-4-1106-preview", // Using the latest GPT-4 model
       temperature: 0.7,
     });
 
