@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import DashboardLayout from "@/layouts/DashboardLayout";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 
 const Dashboard = () => {
   const [userEmail, setUserEmail] = useState("");
