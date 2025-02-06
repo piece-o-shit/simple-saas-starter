@@ -14,9 +14,21 @@ const Header = ({ isAdmin }: HeaderProps) => {
 
   const handleSignOut = async () => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.log("No active session found");
+        navigate("/auth");
+        return;
+      }
+
       console.log("Starting sign out process");
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      
+      if (error) {
+        throw error;
+      }
+      
       console.log("Sign out successful");
       navigate("/auth");
     } catch (error: any) {
@@ -26,6 +38,8 @@ const Header = ({ isAdmin }: HeaderProps) => {
         title: "Error signing out",
         description: error.message,
       });
+      // Even if there's an error, redirect to auth page
+      navigate("/auth");
     }
   };
 
