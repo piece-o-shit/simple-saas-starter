@@ -1,49 +1,19 @@
 
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Form } from "@/components/ui/form";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Database } from "@/integrations/supabase/types";
-
-type Tool = Database['public']['Tables']['tools']['Row'];
-type InsertTool = Database['public']['Tables']['tools']['Insert'];
-
-const toolSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  description: z.string().optional(),
-  type: z.enum(["api", "database", "file_system", "custom"]),
-  configuration: z.any().optional().default({}),
-});
-
-type ToolFormValues = z.infer<typeof toolSchema>;
+import { toolSchema, type ToolFormValues } from "@/schemas/tool-schema";
+import { ToolFormFields } from "@/components/tool/ToolFormFields";
+import { useTool } from "@/hooks/use-tool";
 
 const ToolForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const { tool, isLoading, mutation } = useTool(id);
 
   const form = useForm<ToolFormValues>({
     resolver: zodResolver(toolSchema),
@@ -55,86 +25,32 @@ const ToolForm = () => {
     },
   });
 
-  const { isLoading } = useQuery({
-    queryKey: ['tool', id],
-    queryFn: async () => {
-      if (!id) return null;
+  if (tool) {
+    const formData: ToolFormValues = {
+      name: tool.name,
+      description: tool.description || "",
+      type: tool.type,
+      configuration: tool.configuration || {},
+    };
+    form.reset(formData);
+  }
 
-      const { data, error } = await supabase
-        .from('tools')
-        .select('*')
-        .eq('id', id)
-        .single();
+  const onSubmit = async (values: ToolFormValues) => {
+    const user = (await supabase.auth.getUser()).data.user;
+    
+    if (!user) {
+      throw new Error("User not authenticated");
+    }
 
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error fetching tool",
-          description: error.message,
-        });
-        throw error;
-      }
-
-      if (data) {
-        const formData: ToolFormValues = {
-          name: data.name,
-          description: data.description || "",
-          type: data.type,
-          configuration: data.configuration || {},
-        };
-        form.reset(formData);
-      }
-
-      return data;
-    },
-    enabled: !!id,
-  });
-
-  const mutation = useMutation({
-    mutationFn: async (values: ToolFormValues) => {
-      const user = (await supabase.auth.getUser()).data.user;
-      
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
-
-      const toolData: InsertTool = {
-        name: values.name,
-        description: values.description,
-        type: values.type,
-        configuration: values.configuration,
-        created_by: user.id,
-      };
-
-      const { error } = id
-        ? await supabase
-            .from('tools')
-            .update(toolData)
-            .eq('id', id)
-        : await supabase
-            .from('tools')
-            .insert([toolData]);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tools'] });
-      toast({
-        title: `Tool ${id ? 'updated' : 'created'} successfully`,
-      });
-      navigate('/tools');
-    },
-    onError: (error) => {
-      toast({
-        variant: "destructive",
-        title: `Error ${id ? 'updating' : 'creating'} tool`,
-        description: error.message,
-      });
-    },
-  });
-
-  const onSubmit = (values: ToolFormValues) => {
-    mutation.mutate(values);
+    mutation.mutate({
+      name: values.name,
+      description: values.description,
+      type: values.type,
+      configuration: values.configuration,
+      created_by: user.id,
+    }, {
+      onSuccess: () => navigate('/tools'),
+    });
   };
 
   return (
@@ -146,60 +62,7 @@ const ToolForm = () => {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Type</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a tool type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="api">API</SelectItem>
-                      <SelectItem value="database">Database</SelectItem>
-                      <SelectItem value="file_system">File System</SelectItem>
-                      <SelectItem value="custom">Custom</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <ToolFormFields />
 
             <div className="flex gap-4">
               <Button
