@@ -16,6 +16,9 @@ import AgentForm from "./pages/AgentForm";
 import Tools from "./pages/Tools";
 import ToolForm from "./pages/ToolForm";
 import Admin from "./pages/Admin";
+import Workflows from "./pages/Workflows";
+import WorkflowForm from "./pages/WorkflowForm";
+import WorkflowExecutions from "./pages/WorkflowExecutions";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +42,10 @@ const App = () => (
           <Route path="/tools/new" element={<ToolForm />} />
           <Route path="/tools/:id" element={<ToolForm />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/workflows" element={<Workflows />} />
+          <Route path="/workflows/new" element={<WorkflowForm />} />
+          <Route path="/workflows/:id" element={<WorkflowForm />} />
+          <Route path="/workflows/:id/executions" element={<WorkflowExecutions />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
