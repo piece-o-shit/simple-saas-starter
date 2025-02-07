@@ -16,3 +16,4 @@ export interface FeatureFlags {
   prioritySupport: Feature;
   analyticsAccess: Feature;
 }
+
