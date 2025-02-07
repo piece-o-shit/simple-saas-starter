@@ -14,15 +14,21 @@ export const executeToolAction = async (
 
   if (toolError) throw toolError;
 
-  const typedTool = tool as Tool;
+  const typedTool: Tool = {
+    id: tool.id,
+    type: tool.type,
+    configuration: typeof tool.configuration === 'string' ? 
+      JSON.parse(tool.configuration) : 
+      (tool.configuration || {}) as ToolConfiguration
+  };
 
   switch (typedTool.type) {
     case 'api':
-      return executeApiTool(typedTool.configuration as ToolConfiguration, input);
+      return executeApiTool(typedTool.configuration, input);
     case 'database':
-      return executeDatabaseTool(typedTool.configuration as ToolConfiguration, input);
+      return executeDatabaseTool(typedTool.configuration, input);
     case 'custom':
-      return executeCustomTool(typedTool.configuration as ToolConfiguration, input);
+      return executeCustomTool(typedTool.configuration, input);
     default:
       throw new Error(`Unsupported tool type: ${typedTool.type}`);
   }

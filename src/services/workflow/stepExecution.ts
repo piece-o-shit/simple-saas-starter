@@ -31,9 +31,15 @@ export const executeStep = async (
     if (updateError) throw updateError;
 
     try {
+      const inputData = stepExecution.input ? 
+        (typeof stepExecution.input === 'string' ? 
+          JSON.parse(stepExecution.input) : 
+          stepExecution.input as Record<string, any>
+        ) : {};
+
       const result = await executeToolAction(
         stepExecution.workflow_steps.tool_id,
-        (stepExecution.input || {}) as Record<string, any>
+        inputData
       );
 
       const { data: completedStep, error: completeError } = await supabase
