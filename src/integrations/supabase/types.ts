@@ -184,9 +184,12 @@ export type Database = {
           completed_at: string | null
           created_at: string | null
           error: string | null
+          execution_time: unknown | null
           id: string
           input: Json | null
+          logs: string[] | null
           output: Json | null
+          stack_trace: string | null
           started_at: string | null
           status: string
           step_order: number
@@ -198,9 +201,12 @@ export type Database = {
           completed_at?: string | null
           created_at?: string | null
           error?: string | null
+          execution_time?: unknown | null
           id?: string
           input?: Json | null
+          logs?: string[] | null
           output?: Json | null
+          stack_trace?: string | null
           started_at?: string | null
           status: string
           step_order: number
@@ -212,9 +218,12 @@ export type Database = {
           completed_at?: string | null
           created_at?: string | null
           error?: string | null
+          execution_time?: unknown | null
           id?: string
           input?: Json | null
+          logs?: string[] | null
           output?: Json | null
+          stack_trace?: string | null
           started_at?: string | null
           status?: string
           step_order?: number
@@ -342,33 +351,48 @@ export type Database = {
       }
       workflow_steps: {
         Row: {
+          conditional_expression: string | null
           configuration: Json | null
           created_at: string | null
+          dependencies: Json | null
           id: string
+          input_mapping: Json | null
+          output_mapping: Json | null
           step_order: number
           tool_configuration: Json | null
           tool_id: string | null
           updated_at: string | null
+          validation_rules: Json | null
           workflow_id: string
         }
         Insert: {
+          conditional_expression?: string | null
           configuration?: Json | null
           created_at?: string | null
+          dependencies?: Json | null
           id?: string
+          input_mapping?: Json | null
+          output_mapping?: Json | null
           step_order: number
           tool_configuration?: Json | null
           tool_id?: string | null
           updated_at?: string | null
+          validation_rules?: Json | null
           workflow_id: string
         }
         Update: {
+          conditional_expression?: string | null
           configuration?: Json | null
           created_at?: string | null
+          dependencies?: Json | null
           id?: string
+          input_mapping?: Json | null
+          output_mapping?: Json | null
           step_order?: number
           tool_configuration?: Json | null
           tool_id?: string | null
           updated_at?: string | null
+          validation_rules?: Json | null
           workflow_id?: string
         }
         Relationships: [
