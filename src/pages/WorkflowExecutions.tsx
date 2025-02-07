@@ -100,7 +100,7 @@ const WorkflowExecutions = () => {
                       {execution.error || '-'}
                     </TableCell>
                   </TableRow>
-                )
+                );
               })}
             </TableBody>
           </Table>
