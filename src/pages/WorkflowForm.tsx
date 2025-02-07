@@ -73,7 +73,7 @@ const WorkflowForm = () => {
             .update({
               name: values.name,
               description: values.description,
-              steps: values.steps,
+              steps: values.steps || [], // Ensure steps is always an array
             })
             .eq('id', id)
         : await supabase
@@ -81,7 +81,7 @@ const WorkflowForm = () => {
             .insert([{
               name: values.name,
               description: values.description,
-              steps: values.steps,
+              steps: values.steps || [], // Ensure steps is always an array
               created_by: user.id,
             }]);
 
@@ -107,7 +107,7 @@ const WorkflowForm = () => {
     form.reset({
       name: workflow.name,
       description: workflow.description || "",
-      steps: workflow.steps || [],
+      steps: workflow.steps || [], // Ensure steps is always an array when setting form data
     });
   }
 

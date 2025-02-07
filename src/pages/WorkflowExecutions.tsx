@@ -72,12 +72,12 @@ const WorkflowExecutions = () => {
                       <Badge
                         variant={
                           execution.status === 'completed'
-                            ? 'success'
+                            ? 'default'
                             : execution.status === 'failed'
                             ? 'destructive'
                             : execution.status === 'running'
-                            ? 'default'
-                            : 'secondary'
+                            ? 'secondary'
+                            : 'outline'
                         }
                       >
                         {execution.status}
