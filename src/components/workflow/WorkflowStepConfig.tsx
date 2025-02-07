@@ -28,11 +28,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import type { Json } from "@/integrations/supabase/types";
 
+// Define base types to prevent deep type instantiation
+type JsonRecord = Record<string, unknown>;
+
 const stepConfigSchema = z.object({
   tool_id: z.string().optional(),
-  input_mapping: z.record(z.unknown()).optional().default({}),
-  output_mapping: z.record(z.unknown()).optional().default({}),
-  validation_rules: z.record(z.unknown()).optional().default({}),
+  input_mapping: z.custom<JsonRecord>().optional().default({}),
+  output_mapping: z.custom<JsonRecord>().optional().default({}),
+  validation_rules: z.custom<JsonRecord>().optional().default({}),
   dependencies: z.array(z.string()).optional().default([]),
   conditional_expression: z.string().optional(),
 });
@@ -103,12 +106,11 @@ export function WorkflowStepConfig({
         throw error;
       }
 
-      // Ensure the data matches our schema types
       form.reset({
         tool_id: data.tool_id || undefined,
-        input_mapping: (data.input_mapping as Record<string, unknown>) || {},
-        output_mapping: (data.output_mapping as Record<string, unknown>) || {},
-        validation_rules: (data.validation_rules as Record<string, unknown>) || {},
+        input_mapping: (data.input_mapping as JsonRecord) || {},
+        output_mapping: (data.output_mapping as JsonRecord) || {},
+        validation_rules: (data.validation_rules as JsonRecord) || {},
         dependencies: Array.isArray(data.dependencies) 
           ? (data.dependencies as string[])
           : [],
