@@ -36,7 +36,7 @@ npm run dev`}</code>
 
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">Database Schema</h2>
-          <div className="space-y-2">
+          <div className="space-y-4">
             <h3 className="text-xl font-medium">Core Tables</h3>
             <div className="space-y-4">
               <div>
@@ -51,6 +51,7 @@ npm run dev`}</code>
                 <ul className="list-disc pl-6 space-y-1">
                   <li>agents (automation actors)</li>
                   <li>tools (integration points)</li>
+                  <li>agent_tools (agent-tool associations)</li>
                 </ul>
               </div>
               <div>
@@ -62,6 +63,18 @@ npm run dev`}</code>
                   <li>step_executions (detailed logs)</li>
                 </ul>
               </div>
+            </div>
+
+            <div>
+              <h3 className="text-xl font-medium">Row Level Security (RLS)</h3>
+              <p className="text-gray-600 mb-2">All tables are protected with Row Level Security policies ensuring that users can only:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>View and manage their own tools and workflows</li>
+                <li>Execute workflows and agents they own</li>
+                <li>Access execution history for their own workflows and agents</li>
+                <li>Create and update steps for their own workflows</li>
+              </ul>
+              <p className="text-gray-600 mt-2">This security model ensures complete data isolation between users while allowing full functionality within their own workspace.</p>
             </div>
           </div>
         </section>
@@ -140,8 +153,9 @@ npm run dev`}</code>
           <h2 className="text-2xl font-semibold">Database & Security</h2>
           <ul className="list-disc pl-6 space-y-2">
             <li>Supabase integration for data storage</li>
-            <li>Row Level Security (RLS) policies</li>
+            <li>Row Level Security (RLS) policies for data isolation</li>
             <li>Secure user profile management</li>
+            <li>Role-based access control</li>
           </ul>
         </section>
       </div>
