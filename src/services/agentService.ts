@@ -41,7 +41,7 @@ export const createAgentExecution = async (
     .single();
 
   if (error) throw error;
-  return data;
+  return data as IAgentExecution;
 };
 
 export const updateAgentExecution = async (
@@ -64,7 +64,7 @@ export const getAgentExecutions = async (agent_id: string): Promise<IAgentExecut
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data;
+  return data as IAgentExecution[];
 };
 
 export const getAgentExecutionById = async (execution_id: string): Promise<IAgentExecution> => {
@@ -75,5 +75,5 @@ export const getAgentExecutionById = async (execution_id: string): Promise<IAgen
     .single();
 
   if (error) throw error;
-  return data;
+  return data as IAgentExecution;
 };
