@@ -405,6 +405,19 @@ export type Database = {
         }
         Returns: boolean
       }
+      policy_exists: {
+        Args: {
+          table_name: string
+          policy_name: string
+        }
+        Returns: boolean
+      }
+      rls_enabled: {
+        Args: {
+          table_name: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "user"
