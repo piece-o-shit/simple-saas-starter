@@ -28,8 +28,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import type { Json } from "@/integrations/supabase/types";
 
-// Simple type definitions to avoid deep type instantiation
-type SimpleRecord = { [key: string]: unknown };
+// Base type for mapping objects
+type Mapping = Record<string, unknown>;
 
 const stepConfigSchema = z.object({
   tool_id: z.string().optional(),
@@ -108,9 +108,9 @@ export function WorkflowStepConfig({
 
       form.reset({
         tool_id: data.tool_id || undefined,
-        input_mapping: (data.input_mapping as SimpleRecord) || {},
-        output_mapping: (data.output_mapping as SimpleRecord) || {},
-        validation_rules: (data.validation_rules as SimpleRecord) || {},
+        input_mapping: (data.input_mapping as Mapping) || {},
+        output_mapping: (data.output_mapping as Mapping) || {},
+        validation_rules: (data.validation_rules as Mapping) || {},
         dependencies: Array.isArray(data.dependencies) 
           ? (data.dependencies as string[])
           : [],
