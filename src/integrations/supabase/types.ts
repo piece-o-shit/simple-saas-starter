@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_audit_logs: {
+        Row: {
+          action_type: string
+          admin_id: string
+          changes: Json | null
+          created_at: string | null
+          id: string
+          record_id: string
+          table_name: string
+        }
+        Insert: {
+          action_type: string
+          admin_id: string
+          changes?: Json | null
+          created_at?: string | null
+          id?: string
+          record_id: string
+          table_name: string
+        }
+        Update: {
+          action_type?: string
+          admin_id?: string
+          changes?: Json | null
+          created_at?: string | null
+          id?: string
+          record_id?: string
+          table_name?: string
+        }
+        Relationships: []
+      }
       agent_executions: {
         Row: {
           agent_id: string
