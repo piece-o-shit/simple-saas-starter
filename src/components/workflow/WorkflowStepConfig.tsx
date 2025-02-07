@@ -3,47 +3,16 @@ import React from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ArrowUpDown, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import type { Json } from "@/integrations/supabase/types";
-
-// Define base types for mapping objects
-type BasicMapping = {
-  [key: string]: unknown;
-};
-
-// Define schema with explicit types
-const stepConfigSchema = z.object({
-  tool_id: z.string().optional(),
-  input_mapping: z.record(z.unknown()).default({}),
-  output_mapping: z.record(z.unknown()).default({}),
-  validation_rules: z.record(z.unknown()).default({}),
-  dependencies: z.array(z.string()).default([]),
-  conditional_expression: z.string().optional(),
-});
-
-type StepConfigFormValues = z.infer<typeof stepConfigSchema>;
+import { StepHeader } from './step-config/StepHeader';
+import { ToolSelector } from './step-config/ToolSelector';
+import { ConditionalExpression } from './step-config/ConditionalExpression';
+import { stepConfigSchema, type StepConfigFormValues } from './step-config/types';
 
 interface WorkflowStepConfigProps {
   stepId: string;
@@ -111,11 +80,11 @@ export function WorkflowStepConfig({
 
       form.reset({
         tool_id: data.tool_id || undefined,
-        input_mapping: (data.input_mapping as BasicMapping) || {},
-        output_mapping: (data.output_mapping as BasicMapping) || {},
-        validation_rules: (data.validation_rules as BasicMapping) || {},
+        input_mapping: data.input_mapping as Record<string, unknown> || {},
+        output_mapping: data.output_mapping as Record<string, unknown> || {},
+        validation_rules: data.validation_rules as Record<string, unknown> || {},
         dependencies: Array.isArray(data.dependencies) 
-          ? (data.dependencies as string[]) 
+          ? data.dependencies as string[]
           : [],
         conditional_expression: data.conditional_expression || undefined,
       });
@@ -157,71 +126,16 @@ export function WorkflowStepConfig({
   return (
     <Card className="mb-4">
       <CardContent className="pt-6">
-        <div className="flex items-center justify-between mb-4">
-          <Badge variant="secondary">Step {stepOrder + 1}</Badge>
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onMoveStep(stepId, 'up')}
-              disabled={stepOrder === 0}
-            >
-              <ArrowUpDown className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onDeleteStep(stepId)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <StepHeader
+          stepOrder={stepOrder}
+          onMoveStep={(direction) => onMoveStep(stepId, direction)}
+          onDeleteStep={() => onDeleteStep(stepId)}
+        />
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="tool_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tool</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a tool" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {tools?.map((tool) => (
-                        <SelectItem key={tool.id} value={tool.id}>
-                          {tool.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="conditional_expression"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Conditional Expression</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Enter condition" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+            <ToolSelector form={form} tools={tools || []} />
+            <ConditionalExpression form={form} />
             <Button type="submit">Save Configuration</Button>
           </form>
         </Form>
