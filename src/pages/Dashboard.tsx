@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Plus, Tool, Users } from "lucide-react";
+import { Plus, Wrench, Users } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -69,7 +69,7 @@ const Dashboard = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Tool className="mr-2 h-5 w-5" />
+                <Wrench className="mr-2 h-5 w-5" />
                 Recent Tools
               </CardTitle>
               <CardDescription>Your recently created tools</CardDescription>
