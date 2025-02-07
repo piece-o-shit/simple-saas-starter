@@ -346,6 +346,7 @@ export type Database = {
           created_at: string | null
           id: string
           step_order: number
+          tool_configuration: Json | null
           tool_id: string | null
           updated_at: string | null
           workflow_id: string
@@ -355,6 +356,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           step_order: number
+          tool_configuration?: Json | null
           tool_id?: string | null
           updated_at?: string | null
           workflow_id: string
@@ -364,6 +366,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           step_order?: number
+          tool_configuration?: Json | null
           tool_id?: string | null
           updated_at?: string | null
           workflow_id?: string
