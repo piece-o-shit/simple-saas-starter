@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import type { IWorkflowExecution, IStepExecution } from "@/types/workflow";
+import type { IWorkflowExecution, IStepExecution, WorkflowStatus, StepStatus } from "@/types/workflow";
 import { toast } from "@/hooks/use-toast";
 
 export type WorkflowExecutionInput = Record<string, any>;
@@ -16,7 +16,7 @@ export const startWorkflowExecution = async (
       .from('workflow_executions')
       .insert([{
         workflow_id: workflowId,
-        status: 'pending',
+        status: 'pending' as WorkflowStatus,
         input: input || {},
         current_step: 0,
         started_at: new Date().toISOString(),
@@ -40,7 +40,7 @@ export const startWorkflowExecution = async (
       workflow_execution_id: execution.id,
       workflow_step_id: step.id,
       step_order: step.step_order,
-      status: 'pending',
+      status: 'pending' as StepStatus,
     }));
 
     const { error: stepExecutionError } = await supabase
@@ -81,7 +81,7 @@ export const executeStep = async (
     const { data: updatedStep, error: updateError } = await supabase
       .from('step_executions')
       .update({
-        status: 'running',
+        status: 'running' as StepStatus,
         started_at: new Date().toISOString(),
       })
       .eq('id', stepExecution.id)
@@ -92,13 +92,16 @@ export const executeStep = async (
 
     try {
       // Execute the step based on the tool configuration
-      const result = await executeToolAction(stepExecution.workflow_steps.tool_id, stepExecution.input);
+      const result = await executeToolAction(
+        stepExecution.workflow_steps.tool_id, 
+        stepExecution.input as Record<string, any> || {}
+      );
 
       // Update step execution with success
       const { data: completedStep, error: completeError } = await supabase
         .from('step_executions')
         .update({
-          status: 'completed',
+          status: 'completed' as StepStatus,
           output: result,
           completed_at: new Date().toISOString(),
         })
@@ -108,13 +111,18 @@ export const executeStep = async (
 
       if (completeError) throw completeError;
 
-      return completedStep;
+      return {
+        ...completedStep,
+        status: completedStep.status as StepStatus,
+        input: completedStep.input as Record<string, any>,
+        output: completedStep.output as Record<string, any>
+      };
     } catch (error: any) {
       // Update step execution with failure
       const { data: failedStep, error: failError } = await supabase
         .from('step_executions')
         .update({
-          status: 'failed',
+          status: 'failed' as StepStatus,
           error: error.message,
           completed_at: new Date().toISOString(),
         })
@@ -123,7 +131,13 @@ export const executeStep = async (
         .single();
 
       if (failError) throw failError;
-      throw error;
+
+      return {
+        ...failedStep,
+        status: failedStep.status as StepStatus,
+        input: failedStep.input as Record<string, any>,
+        output: failedStep.output as Record<string, any>
+      };
     }
   } catch (error: any) {
     console.error('Error executing workflow step:', error);
@@ -163,23 +177,31 @@ export const continueWorkflowExecution = async (
 
     if (!nextStep) {
       // All steps are completed
-      const { error: updateError } = await supabase
+      const { data: completedExecution, error: updateError } = await supabase
         .from('workflow_executions')
         .update({
-          status: 'completed',
+          status: 'completed' as WorkflowStatus,
           completed_at: new Date().toISOString(),
         })
-        .eq('id', executionId);
+        .eq('id', executionId)
+        .select()
+        .single();
 
       if (updateError) throw updateError;
-      return getWorkflowExecution(executionId);
+
+      return {
+        ...completedExecution,
+        status: completedExecution.status as WorkflowStatus,
+        input: completedExecution.input as Record<string, any>,
+        output: completedExecution.output as Record<string, any>
+      };
     }
 
     // Update workflow execution status
     const { error: updateError } = await supabase
       .from('workflow_executions')
       .update({
-        status: 'running',
+        status: 'running' as WorkflowStatus,
         current_step: nextStep.step_order,
       })
       .eq('id', executionId);
@@ -197,7 +219,7 @@ export const continueWorkflowExecution = async (
     const { error: updateError } = await supabase
       .from('workflow_executions')
       .update({
-        status: 'failed',
+        status: 'failed' as WorkflowStatus,
         error: error.message,
         completed_at: new Date().toISOString(),
       })
@@ -277,7 +299,13 @@ export const getWorkflowExecution = async (executionId: string): Promise<IWorkfl
     .single();
 
   if (error) throw error;
-  return data;
+
+  return {
+    ...data,
+    status: data.status as WorkflowStatus,
+    input: data.input as Record<string, any>,
+    output: data.output as Record<string, any>
+  };
 };
 
 export const getStepExecutions = async (executionId: string): Promise<IStepExecution[]> => {
@@ -288,5 +316,11 @@ export const getStepExecutions = async (executionId: string): Promise<IStepExecu
     .order('step_order', { ascending: true });
 
   if (error) throw error;
-  return data;
+
+  return data.map(step => ({
+    ...step,
+    status: step.status as StepStatus,
+    input: step.input as Record<string, any>,
+    output: step.output as Record<string, any>
+  }));
 };
