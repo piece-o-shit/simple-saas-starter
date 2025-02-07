@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import type { ToolConfiguration } from "./types";
+import type { Tool, ToolConfiguration } from "./types";
 
 export const executeToolAction = async (
   toolId: string,
@@ -14,15 +14,17 @@ export const executeToolAction = async (
 
   if (toolError) throw toolError;
 
-  switch (tool.type) {
+  const typedTool = tool as Tool;
+
+  switch (typedTool.type) {
     case 'api':
-      return executeApiTool(tool.configuration, input);
+      return executeApiTool(typedTool.configuration as ToolConfiguration, input);
     case 'database':
-      return executeDatabaseTool(tool.configuration, input);
+      return executeDatabaseTool(typedTool.configuration as ToolConfiguration, input);
     case 'custom':
-      return executeCustomTool(tool.configuration, input);
+      return executeCustomTool(typedTool.configuration as ToolConfiguration, input);
     default:
-      throw new Error(`Unsupported tool type: ${tool.type}`);
+      throw new Error(`Unsupported tool type: ${typedTool.type}`);
   }
 };
 
