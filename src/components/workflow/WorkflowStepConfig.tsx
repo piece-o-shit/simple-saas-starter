@@ -28,9 +28,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import type { Json } from "@/integrations/supabase/types";
 
-// Base type for mapping objects
-type Mapping = Record<string, unknown>;
+// Define base types for mapping objects
+type BasicMapping = {
+  [key: string]: unknown;
+};
 
+// Define schema with explicit types
 const stepConfigSchema = z.object({
   tool_id: z.string().optional(),
   input_mapping: z.record(z.unknown()).default({}),
@@ -108,11 +111,11 @@ export function WorkflowStepConfig({
 
       form.reset({
         tool_id: data.tool_id || undefined,
-        input_mapping: (data.input_mapping as Mapping) || {},
-        output_mapping: (data.output_mapping as Mapping) || {},
-        validation_rules: (data.validation_rules as Mapping) || {},
+        input_mapping: (data.input_mapping as BasicMapping) || {},
+        output_mapping: (data.output_mapping as BasicMapping) || {},
+        validation_rules: (data.validation_rules as BasicMapping) || {},
         dependencies: Array.isArray(data.dependencies) 
-          ? (data.dependencies as string[])
+          ? (data.dependencies as string[]) 
           : [],
         conditional_expression: data.conditional_expression || undefined,
       });
