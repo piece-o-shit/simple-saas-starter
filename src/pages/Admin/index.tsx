@@ -10,8 +10,9 @@ import { UserForm } from "./components/UserForm";
 import { UserTable } from "./components/UserTable";
 import { useUsers } from "./hooks/useUsers";
 import { UserFormData, UserProfile, AppRole } from "./types";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 
-const Admin = () => {
+const AdminContent = () => {
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -199,52 +200,56 @@ const Admin = () => {
   };
 
   return (
-    <DashboardLayout>
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Admin Panel</h1>
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <UserPlus className="mr-2 h-4 w-4" />
-                Add User
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New User</DialogTitle>
-                <DialogDescription>
-                  Add a new user to the system. They will receive an email to set their password.
-                </DialogDescription>
-              </DialogHeader>
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Admin Panel</h1>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <UserPlus className="mr-2 h-4 w-4" />
+              Add User
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create New User</DialogTitle>
+              <DialogDescription>
+                Add a new user to the system. They will receive an email to set their password.
+              </DialogDescription>
+            </DialogHeader>
+            <ErrorBoundary>
               <UserForm
                 formData={formData}
                 setFormData={setFormData}
                 onSubmit={handleCreateUser}
                 onCancel={() => setIsCreateDialogOpen(false)}
               />
-            </DialogContent>
-          </Dialog>
-        </div>
-        
-        {loading ? (
-          <div className="text-center">Loading users...</div>
-        ) : (
+            </ErrorBoundary>
+          </DialogContent>
+        </Dialog>
+      </div>
+      
+      {loading ? (
+        <div className="text-center">Loading users...</div>
+      ) : (
+        <ErrorBoundary>
           <UserTable
             users={users}
             onEditClick={handleEditClick}
             onDeleteClick={handleDeleteUser}
           />
-        )}
+        </ErrorBoundary>
+      )}
 
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit User</DialogTitle>
-              <DialogDescription>
-                Modify user details and roles.
-              </DialogDescription>
-            </DialogHeader>
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>
+              Modify user details and roles.
+            </DialogDescription>
+          </DialogHeader>
+          <ErrorBoundary>
             <UserForm
               formData={formData}
               setFormData={setFormData}
@@ -252,11 +257,22 @@ const Admin = () => {
               onCancel={() => setIsEditDialogOpen(false)}
               isEditMode
             />
-          </DialogContent>
-        </Dialog>
-      </div>
+          </ErrorBoundary>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+const Admin = () => {
+  return (
+    <DashboardLayout>
+      <ErrorBoundary>
+        <AdminContent />
+      </ErrorBoundary>
     </DashboardLayout>
   );
 };
 
 export default Admin;
+
