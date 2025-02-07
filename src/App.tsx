@@ -15,6 +15,7 @@ import Agents from "./pages/Agents";
 import AgentForm from "./pages/AgentForm";
 import Tools from "./pages/Tools";
 import ToolForm from "./pages/ToolForm";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/tools" element={<Tools />} />
           <Route path="/tools/new" element={<ToolForm />} />
           <Route path="/tools/:id" element={<ToolForm />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
