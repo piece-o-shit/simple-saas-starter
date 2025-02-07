@@ -27,6 +27,8 @@ export const executeToolAction = async (
       return executeApiTool(typedTool.configuration, input);
     case 'database':
       return executeDatabaseTool(typedTool.configuration, input);
+    case 'file_system':
+      return executeFileSystemTool(typedTool.configuration, input);
     case 'custom':
       return executeCustomTool(typedTool.configuration, input);
     default:
@@ -50,6 +52,14 @@ const executeDatabaseTool = async (
   return { success: true };
 };
 
+const executeFileSystemTool = async (
+  configuration: ToolConfiguration,
+  input: Record<string, any>
+): Promise<Record<string, any>> => {
+  // Implementation for file system tool execution
+  return { success: true };
+};
+
 const executeCustomTool = async (
   configuration: ToolConfiguration,
   input: Record<string, any>
@@ -57,3 +67,4 @@ const executeCustomTool = async (
   // Implementation for custom tool execution
   return { success: true };
 };
+

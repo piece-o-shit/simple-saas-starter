@@ -34,8 +34,7 @@ export const executeStep = async (
       const inputData = stepExecution.input ? 
         (typeof stepExecution.input === 'string' ? 
           JSON.parse(stepExecution.input) : 
-          stepExecution.input as Record<string, any>
-        ) : {};
+          stepExecution.input) as Record<string, any>;
 
       const result = await executeToolAction(
         stepExecution.workflow_steps.tool_id,
@@ -58,8 +57,12 @@ export const executeStep = async (
       return {
         ...completedStep,
         status: completedStep.status as StepStatus,
-        input: (completedStep.input || {}) as Record<string, any>,
-        output: (completedStep.output || {}) as Record<string, any>
+        input: (typeof completedStep.input === 'string' ? 
+          JSON.parse(completedStep.input) : 
+          completedStep.input || {}) as Record<string, any>,
+        output: (typeof completedStep.output === 'string' ? 
+          JSON.parse(completedStep.output) : 
+          completedStep.output || {}) as Record<string, any>
       };
     } catch (error: any) {
       const { data: failedStep, error: failError } = await supabase
@@ -78,8 +81,12 @@ export const executeStep = async (
       return {
         ...failedStep,
         status: failedStep.status as StepStatus,
-        input: (failedStep.input || {}) as Record<string, any>,
-        output: (failedStep.output || {}) as Record<string, any>
+        input: (typeof failedStep.input === 'string' ? 
+          JSON.parse(failedStep.input) : 
+          failedStep.input || {}) as Record<string, any>,
+        output: (typeof failedStep.output === 'string' ? 
+          JSON.parse(failedStep.output) : 
+          failedStep.output || {}) as Record<string, any>
       };
     }
   } catch (error: any) {
@@ -105,7 +112,12 @@ export const getStepExecutions = async (executionId: string): Promise<IStepExecu
   return data.map(step => ({
     ...step,
     status: step.status as StepStatus,
-    input: (step.input || {}) as Record<string, any>,
-    output: (step.output || {}) as Record<string, any>
+    input: (typeof step.input === 'string' ? 
+      JSON.parse(step.input) : 
+      step.input || {}) as Record<string, any>,
+    output: (typeof step.output === 'string' ? 
+      JSON.parse(step.output) : 
+      step.output || {}) as Record<string, any>
   }));
 };
+
