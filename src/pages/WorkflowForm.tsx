@@ -104,10 +104,13 @@ const WorkflowForm = () => {
   });
 
   if (workflow) {
+    // Ensure steps is an array when setting form data
+    const workflowSteps = Array.isArray(workflow.steps) ? workflow.steps : [];
+    
     form.reset({
       name: workflow.name,
       description: workflow.description || "",
-      steps: workflow.steps || [], // Ensure steps is always an array when setting form data
+      steps: workflowSteps,
     });
   }
 
