@@ -26,13 +26,14 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowUpDown, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import type { Json } from "@/integrations/supabase/types";
 
 const stepConfigSchema = z.object({
   tool_id: z.string().optional(),
-  input_mapping: z.record(z.unknown()).default({}),
-  output_mapping: z.record(z.unknown()).default({}),
-  validation_rules: z.record(z.unknown()).default({}),
-  dependencies: z.array(z.string()).default([]),
+  input_mapping: z.record(z.unknown()).optional().default({}),
+  output_mapping: z.record(z.unknown()).optional().default({}),
+  validation_rules: z.record(z.unknown()).optional().default({}),
+  dependencies: z.array(z.string()).optional().default([]),
   conditional_expression: z.string().optional(),
 });
 
@@ -105,10 +106,12 @@ export function WorkflowStepConfig({
       // Ensure the data matches our schema types
       form.reset({
         tool_id: data.tool_id || undefined,
-        input_mapping: data.input_mapping || {},
-        output_mapping: data.output_mapping || {},
-        validation_rules: data.validation_rules || {},
-        dependencies: Array.isArray(data.dependencies) ? data.dependencies : [],
+        input_mapping: (data.input_mapping as Record<string, unknown>) || {},
+        output_mapping: (data.output_mapping as Record<string, unknown>) || {},
+        validation_rules: (data.validation_rules as Record<string, unknown>) || {},
+        dependencies: Array.isArray(data.dependencies) 
+          ? (data.dependencies as string[])
+          : [],
         conditional_expression: data.conditional_expression || undefined,
       });
 
@@ -118,9 +121,18 @@ export function WorkflowStepConfig({
 
   const onSubmit = async (values: StepConfigFormValues) => {
     try {
+      const updateData = {
+        tool_id: values.tool_id,
+        input_mapping: values.input_mapping as Json,
+        output_mapping: values.output_mapping as Json,
+        validation_rules: values.validation_rules as Json,
+        dependencies: values.dependencies as Json,
+        conditional_expression: values.conditional_expression,
+      };
+
       const { error } = await supabase
         .from('workflow_steps')
-        .update(values)
+        .update(updateData)
         .eq('id', stepId);
 
       if (error) throw error;
