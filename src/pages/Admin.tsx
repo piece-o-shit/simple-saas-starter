@@ -1,61 +1,32 @@
-
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Pencil, Trash2, UserPlus } from "lucide-react";
+import { Database } from "@/integrations/supabase/types";
+
+type AppRole = Database["public"]["Enums"]["app_role"];
 
 interface UserProfile {
   id: string;
   email: string;
   full_name: string | null;
   subscription_tier: string;
-  roles: string[];
+  roles: AppRole[];
 }
 
 interface UserFormData {
   email: string;
   full_name: string;
   subscription_tier: string;
-  roles: string[];
+  roles: AppRole[];
 }
 
 const Admin = () => {
@@ -138,21 +109,27 @@ const Admin = () => {
       const rolePromises = formData.roles.map(role =>
         supabase
           .from('user_roles')
-          .insert({ user_id: authData.user.id, role })
+          .insert({ 
+            user_id: authData.user.id, 
+            role: role as AppRole 
+          })
       );
 
       await Promise.all(rolePromises);
 
       // Log admin action
-      await supabase
-        .from('admin_audit_logs')
-        .insert({
-          admin_id: (await supabase.auth.getUser()).data.user?.id,
-          action_type: 'CREATE',
-          table_name: 'profiles',
-          record_id: authData.user.id,
-          changes: formData
-        });
+      const currentUser = (await supabase.auth.getUser()).data.user;
+      if (currentUser) {
+        await supabase
+          .from('admin_audit_logs')
+          .insert({
+            admin_id: currentUser.id,
+            action_type: 'CREATE',
+            table_name: 'profiles',
+            record_id: authData.user.id,
+            changes: JSON.stringify(formData)
+          });
+      }
 
       toast({
         title: "Success",
@@ -194,21 +171,27 @@ const Admin = () => {
       const rolePromises = formData.roles.map(role =>
         supabase
           .from('user_roles')
-          .insert({ user_id: selectedUser.id, role })
+          .insert({ 
+            user_id: selectedUser.id, 
+            role: role as AppRole 
+          })
       );
 
       await Promise.all(rolePromises);
 
       // Log admin action
-      await supabase
-        .from('admin_audit_logs')
-        .insert({
-          admin_id: (await supabase.auth.getUser()).data.user?.id,
-          action_type: 'UPDATE',
-          table_name: 'profiles',
-          record_id: selectedUser.id,
-          changes: formData
-        });
+      const currentUser = (await supabase.auth.getUser()).data.user;
+      if (currentUser) {
+        await supabase
+          .from('admin_audit_logs')
+          .insert({
+            admin_id: currentUser.id,
+            action_type: 'UPDATE',
+            table_name: 'profiles',
+            record_id: selectedUser.id,
+            changes: JSON.stringify(formData)
+          });
+      }
 
       toast({
         title: "Success",
@@ -320,10 +303,10 @@ const Admin = () => {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Roles</label>
+                  <label className="text-sm font-medium">Role</label>
                   <Select
                     value={formData.roles[0]}
-                    onValueChange={(value) => setFormData({ ...formData, roles: [value] })}
+                    onValueChange={(value: AppRole) => setFormData({ ...formData, roles: [value] })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -455,10 +438,10 @@ const Admin = () => {
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium">Roles</label>
+                <label className="text-sm font-medium">Role</label>
                 <Select
                   value={formData.roles[0]}
-                  onValueChange={(value) => setFormData({ ...formData, roles: [value] })}
+                  onValueChange={(value: AppRole) => setFormData({ ...formData, roles: [value] })}
                 >
                   <SelectTrigger>
                     <SelectValue />
