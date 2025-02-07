@@ -3,10 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import type { IStepExecution, StepStatus } from "@/types/workflow";
 import { executeToolAction } from "./toolExecutor";
+import type { ExecutionContext } from "./types";
 
 export const executeStep = async (
   executionId: string,
-  stepId: string
+  stepId: string,
+  context?: ExecutionContext
 ): Promise<IStepExecution> => {
   try {
     const { data: stepExecution, error: getError } = await supabase
@@ -31,10 +33,19 @@ export const executeStep = async (
     if (updateError) throw updateError;
 
     try {
-      const inputData = stepExecution.input ? 
+      // Process input with context if available
+      let inputData = stepExecution.input ? 
         (typeof stepExecution.input === 'string' ? 
           JSON.parse(stepExecution.input) : 
-          stepExecution.input) as Record<string, any>;
+          stepExecution.input) as Record<string, any> : {};
+
+      if (context) {
+        inputData = {
+          ...inputData,
+          previousStepResults: context.previousStepResults,
+          globalVariables: context.globalVariables,
+        };
+      }
 
       const result = await executeToolAction(
         stepExecution.workflow_steps.tool_id,
@@ -65,6 +76,8 @@ export const executeStep = async (
           completedStep.output || {}) as Record<string, any>
       };
     } catch (error: any) {
+      console.error('Step execution failed:', error);
+      
       const { data: failedStep, error: failError } = await supabase
         .from('step_executions')
         .update({
@@ -120,4 +133,3 @@ export const getStepExecutions = async (executionId: string): Promise<IStepExecu
       step.output || {}) as Record<string, any>
   }));
 };
-

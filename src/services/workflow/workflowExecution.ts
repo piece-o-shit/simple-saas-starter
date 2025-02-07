@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import type { IWorkflowExecution, WorkflowStatus } from "@/types/workflow";
-import type { WorkflowExecutionInput } from "./types";
+import type { WorkflowExecutionInput, ExecutionContext } from "./types";
 import { executeStep } from "./stepExecution";
 
 export const startWorkflowExecution = async (
@@ -71,7 +71,7 @@ export const continueWorkflowExecution = async (
 
     const { data: steps, error: stepsError } = await supabase
       .from('step_executions')
-      .select('*')
+      .select('*, workflow_steps(*)')
       .eq('workflow_execution_id', executionId)
       .order('step_order', { ascending: true });
 
@@ -110,7 +110,21 @@ export const continueWorkflowExecution = async (
 
     if (updateError) throw updateError;
 
-    await executeStep(executionId, nextStep.workflow_step_id);
+    // Create execution context
+    const context: ExecutionContext = {
+      workflowId: execution.workflow_id,
+      executionId: execution.id,
+      previousStepResults: steps
+        .filter(step => step.status === 'completed')
+        .reduce((acc, step) => ({
+          ...acc,
+          [step.workflow_steps.id]: step.output
+        }), {}),
+      globalVariables: execution.input || {},
+      currentStepNumber: nextStep.step_order
+    };
+
+    await executeStep(executionId, nextStep.workflow_step_id, context);
 
     return continueWorkflowExecution(executionId);
   } catch (error: any) {
