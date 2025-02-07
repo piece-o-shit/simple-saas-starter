@@ -92,11 +92,22 @@ export const continueWorkflowExecution = async (
 
       if (updateError) throw updateError;
 
+      // Ensure the input/output are properly typed as Record<string, any>
+      const processedInput = completedExecution.input ? 
+        (typeof completedExecution.input === 'string' ? 
+          JSON.parse(completedExecution.input) : 
+          completedExecution.input) as Record<string, any> : {};
+
+      const processedOutput = completedExecution.output ? 
+        (typeof completedExecution.output === 'string' ? 
+          JSON.parse(completedExecution.output) : 
+          completedExecution.output) as Record<string, any> : {};
+
       return {
         ...completedExecution,
         status: completedExecution.status as WorkflowStatus,
-        input: (completedExecution.input || {}) as Record<string, any>,
-        output: (completedExecution.output || {}) as Record<string, any>
+        input: processedInput,
+        output: processedOutput
       };
     }
 
@@ -120,7 +131,9 @@ export const continueWorkflowExecution = async (
           ...acc,
           [step.workflow_steps.id]: step.output
         }), {}),
-      globalVariables: execution.input || {},
+      globalVariables: typeof execution.input === 'string' ? 
+        JSON.parse(execution.input) : 
+        (execution.input || {}) as Record<string, any>,
       currentStepNumber: nextStep.step_order
     };
 
@@ -160,10 +173,21 @@ export const getWorkflowExecution = async (executionId: string): Promise<IWorkfl
 
   if (error) throw error;
 
+  // Ensure proper type handling for input/output
+  const processedInput = data.input ? 
+    (typeof data.input === 'string' ? 
+      JSON.parse(data.input) : 
+      data.input) as Record<string, any> : {};
+
+  const processedOutput = data.output ? 
+    (typeof data.output === 'string' ? 
+      JSON.parse(data.output) : 
+      data.output) as Record<string, any> : {};
+
   return {
     ...data,
     status: data.status as WorkflowStatus,
-    input: (data.input || {}) as Record<string, any>,
-    output: (data.output || {}) as Record<string, any>
+    input: processedInput,
+    output: processedOutput
   };
 };

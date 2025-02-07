@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import type { Tool, ToolConfiguration, ToolExecutionError } from "./types";
+import { Tool, ToolConfiguration } from "./types";
+import { ToolExecutionError } from "./types";
 import { toast } from "@/hooks/use-toast";
 
 export const executeToolAction = async (
