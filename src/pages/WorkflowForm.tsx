@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -103,6 +102,7 @@ const WorkflowForm = () => {
             name: values.name,
             description: values.description,
             created_by: user.id,
+            steps: [], // Add empty steps array as required by the schema
           }])
           .select()
           .single();

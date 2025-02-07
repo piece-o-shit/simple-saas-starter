@@ -29,9 +29,9 @@ import { toast } from "@/hooks/use-toast";
 
 const stepConfigSchema = z.object({
   tool_id: z.string().optional(),
-  input_mapping: z.record(z.any()).default({}),
-  output_mapping: z.record(z.any()).default({}),
-  validation_rules: z.record(z.any()).default({}),
+  input_mapping: z.record(z.unknown()).default({}),
+  output_mapping: z.record(z.unknown()).default({}),
+  validation_rules: z.record(z.unknown()).default({}),
   dependencies: z.array(z.string()).default([]),
   conditional_expression: z.string().optional(),
 });
@@ -102,13 +102,14 @@ export function WorkflowStepConfig({
         throw error;
       }
 
+      // Ensure the data matches our schema types
       form.reset({
-        tool_id: data.tool_id,
+        tool_id: data.tool_id || undefined,
         input_mapping: data.input_mapping || {},
         output_mapping: data.output_mapping || {},
         validation_rules: data.validation_rules || {},
-        dependencies: data.dependencies || [],
-        conditional_expression: data.conditional_expression,
+        dependencies: Array.isArray(data.dependencies) ? data.dependencies : [],
+        conditional_expression: data.conditional_expression || undefined,
       });
 
       return data;
