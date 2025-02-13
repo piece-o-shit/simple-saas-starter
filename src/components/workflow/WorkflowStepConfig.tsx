@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -78,20 +78,31 @@ export function WorkflowStepConfig({
         throw error;
       }
 
-      form.reset({
-        tool_id: data.tool_id || undefined,
-        input_mapping: data.input_mapping as Record<string, unknown> || {},
-        output_mapping: data.output_mapping as Record<string, unknown> || {},
-        validation_rules: data.validation_rules as Record<string, unknown> || {},
-        dependencies: Array.isArray(data.dependencies) 
-          ? data.dependencies as string[]
-          : [],
-        conditional_expression: data.conditional_expression || undefined,
-      });
-
       return data;
     },
   });
+
+  // Move form reset logic into useEffect
+  useEffect(() => {
+    if (step) {
+      const formValues = {
+        tool_id: step.tool_id || undefined,
+        input_mapping: step.input_mapping as Record<string, unknown> || {},
+        output_mapping: step.output_mapping as Record<string, unknown> || {},
+        validation_rules: step.validation_rules as Record<string, unknown> || {},
+        dependencies: Array.isArray(step.dependencies) 
+          ? step.dependencies as string[]
+          : [],
+        conditional_expression: step.conditional_expression || undefined,
+      };
+
+      // Only reset if values are different
+      const currentValues = form.getValues();
+      if (JSON.stringify(currentValues) !== JSON.stringify(formValues)) {
+        form.reset(formValues);
+      }
+    }
+  }, [step, form]);
 
   const onSubmit = async (values: StepConfigFormValues) => {
     try {
