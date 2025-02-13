@@ -1,10 +1,6 @@
 
 import { z } from "zod";
 
-export type BasicMapping = {
-  [key: string]: unknown;
-};
-
 export const stepConfigSchema = z.object({
   tool_id: z.string().optional(),
   input_mapping: z.record(z.unknown()).default({}),
@@ -14,4 +10,11 @@ export const stepConfigSchema = z.object({
   conditional_expression: z.string().optional(),
 });
 
-export type StepConfigFormValues = z.infer<typeof stepConfigSchema>;
+export type StepConfigFormValues = {
+  tool_id?: string;
+  input_mapping: Record<string, unknown>;
+  output_mapping: Record<string, unknown>;
+  validation_rules: Record<string, unknown>;
+  dependencies: string[];
+  conditional_expression?: string;
+};
