@@ -1,7 +1,7 @@
 
 import { z } from "zod";
+import type { Json } from "@/integrations/supabase/types";
 
-// Define schema without using recursive references
 export const stepConfigSchema = z.object({
   tool_id: z.string().optional(),
   input_mapping: z.record(z.any()).default({}),
@@ -11,4 +11,11 @@ export const stepConfigSchema = z.object({
   conditional_expression: z.string().optional(),
 });
 
-export type StepConfigFormValues = z.infer<typeof stepConfigSchema>;
+export type StepConfigFormValues = {
+  tool_id?: string;
+  input_mapping: Record<string, any>;
+  output_mapping: Record<string, any>;
+  validation_rules: Record<string, any>;
+  dependencies: string[];
+  conditional_expression?: string;
+};
