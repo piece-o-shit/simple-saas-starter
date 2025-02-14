@@ -1,5 +1,5 @@
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,14 +29,16 @@ export function WorkflowStepConfig({
   onMoveStep,
   onDeleteStep,
 }: WorkflowStepConfigProps) {
+  const defaultValues = useMemo(() => ({
+    input_mapping: {},
+    output_mapping: {},
+    validation_rules: {},
+    dependencies: [],
+  }), []);
+
   const form = useForm<StepConfigFormValues>({
     resolver: zodResolver(stepConfigSchema),
-    defaultValues: {
-      input_mapping: {},
-      output_mapping: {},
-      validation_rules: {},
-      dependencies: [],
-    },
+    defaultValues,
   });
 
   const { data: tools } = useQuery({
@@ -82,23 +84,22 @@ export function WorkflowStepConfig({
     },
   });
 
-  const resetForm = useCallback((data: any) => {
-    const formValues: StepConfigFormValues = {
-      tool_id: data.tool_id || undefined,
-      input_mapping: data.input_mapping as Record<string, unknown> || {},
-      output_mapping: data.output_mapping as Record<string, unknown> || {},
-      validation_rules: data.validation_rules as Record<string, unknown> || {},
-      dependencies: Array.isArray(data.dependencies) ? data.dependencies : [],
-      conditional_expression: data.conditional_expression || undefined,
-    };
-    form.reset(formValues);
-  }, [form]);
-
   useEffect(() => {
     if (step) {
-      resetForm(step);
+      const formValues: StepConfigFormValues = {
+        tool_id: step.tool_id || undefined,
+        input_mapping: step.input_mapping || {},
+        output_mapping: step.output_mapping || {},
+        validation_rules: step.validation_rules || {},
+        dependencies: Array.isArray(step.dependencies) ? step.dependencies : [],
+        conditional_expression: step.conditional_expression || undefined,
+      };
+      
+      form.reset(formValues, {
+        keepDefaultValues: true,
+      });
     }
-  }, [step, resetForm]);
+  }, [step, form]);
 
   const onSubmit = async (values: StepConfigFormValues) => {
     try {
