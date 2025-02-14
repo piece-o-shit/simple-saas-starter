@@ -1,5 +1,5 @@
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,16 +29,14 @@ export function WorkflowStepConfig({
   onMoveStep,
   onDeleteStep,
 }: WorkflowStepConfigProps) {
-  const defaultValues: StepConfigFormValues = {
-    input_mapping: {},
-    output_mapping: {},
-    validation_rules: {},
-    dependencies: [],
-  };
-
   const form = useForm<StepConfigFormValues>({
     resolver: zodResolver(stepConfigSchema),
-    defaultValues,
+    defaultValues: {
+      input_mapping: {},
+      output_mapping: {},
+      validation_rules: {},
+      dependencies: [],
+    },
   });
 
   const { data: tools } = useQuery({
@@ -86,19 +84,16 @@ export function WorkflowStepConfig({
 
   useEffect(() => {
     if (step) {
-      const formValues: StepConfigFormValues = {
+      form.reset({
         tool_id: step.tool_id || undefined,
-        input_mapping: (step.input_mapping as Record<string, any>) || {},
-        output_mapping: (step.output_mapping as Record<string, any>) || {},
-        validation_rules: (step.validation_rules as Record<string, any>) || {},
-        dependencies: (Array.isArray(step.dependencies) 
-          ? step.dependencies.map(d => String(d))
-          : []
-        ),
+        input_mapping: (step.input_mapping as Record<string, unknown>) || {},
+        output_mapping: (step.output_mapping as Record<string, unknown>) || {},
+        validation_rules: (step.validation_rules as Record<string, unknown>) || {},
+        dependencies: Array.isArray(step.dependencies) 
+          ? step.dependencies.map(String)
+          : [],
         conditional_expression: step.conditional_expression || undefined,
-      };
-
-      form.reset(formValues);
+      });
     }
   }, [step]);
 
